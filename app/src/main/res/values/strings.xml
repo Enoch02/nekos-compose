@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Nekos Compose</string>
+    <string name="home">Home</string>
+    <string name="favorites">Favourites</string>
+    <string name="search">Search</string>
+    <string name="refresh">Refresh</string>
+    <string name="close">Close</string>
+    <string name="favorite">Favorite</string>
+    <string name="save">Save to storage</string>
+    <string name="share">Share</string>
+    <string name="add_to_fav">Add to favorites</string>
+    <string name="downloading">Starting download</string>
+    <string name="images">images</string>
+    <string name="categories">Categories</string>
+    <string name="type_something">Enter some text</string>
+</resources>
