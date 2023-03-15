@@ -118,6 +118,10 @@ class MainViewModel(context: Context) : ViewModel() {
             viewModelScope.launch {
                 searchResults = apiService.search(query, type, category, amount).results
                 showingResults = true
+                Log.d(TAG, "searchNeko: Search results", )
+                searchResults.forEach {
+                    Log.d(TAG, "searchNeko: ${it.sourceUrl}")
+                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "searchNeko: ${e.message}", e)

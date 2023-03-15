@@ -26,10 +26,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.enoch02.nekoscompose.data.model.MainViewModel
 import com.enoch02.nekoscompose.data.model.MainViewModelFactory
+import com.enoch02.nekoscompose.ui.composables.AppScreenTopBar
 import com.enoch02.nekoscompose.ui.screens.main.FavouritesScreen
 import com.enoch02.nekoscompose.ui.screens.main.HomeScreen
 import com.enoch02.nekoscompose.ui.screens.main.SearchScreen
-import com.enoch02.nekoscompose.ui.screens.main.SearchScreenTopBar
 import com.enoch02.nekoscompose.ui.theme.NekosComposeTheme
 
 
@@ -47,7 +47,7 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     topBar = {
-                        when (selectedScreen) {
+                        /*when (selectedScreen) {
                             0 -> {
                                 AppScreenTopBar(currentScreen = selectedScreen)
                             }
@@ -57,7 +57,8 @@ class MainActivity : ComponentActivity() {
                             2 -> {
                                 AppScreenTopBar(currentScreen = selectedScreen)
                             }
-                        }
+                        }*/
+                        AppScreenTopBar(currentScreen = selectedScreen)
                     },
                     bottomBar = {
                         val items = listOf(R.string.home, R.string.search, R.string.favorites)
@@ -105,29 +106,4 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-
-
-@Composable
-private fun AppScreenTopBar(
-    mainViewModel: MainViewModel = viewModel(),
-    currentScreen: Int
-) {
-    TopAppBar(
-        title = { Text(text = stringResource(R.string.app_name)) },
-        actions = {
-            IconButton(
-                onClick = {
-                    mainViewModel.refresh()
-                },
-                content = {
-                    if (currentScreen == 0)
-                        Icon(
-                            imageVector = Icons.Default.Refresh,
-                            contentDescription = stringResource(R.string.refresh)
-                        )
-                }
-            )
-        }
-    )
 }

@@ -20,8 +20,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.enoch02.nekoscompose.R
@@ -54,6 +56,47 @@ fun SearchScreen(
         modifier = modifier.padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+
+        if (!mainViewModel.showingResults) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                singleLine = true,
+                trailingIcon = {
+                    IconButton(
+                        onClick = {
+                            if (query.isEmpty() || query.isBlank() || selectedCategoryString.isBlank()) {
+                                Toast.makeText(
+                                    context,
+                                    R.string.type_something,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } else {
+                                mainViewModel.searchNeko(
+                                    query = query,
+                                    category = selectedCategoryString,
+                                    type = if (selectedGifChip == -1) "1" else "2",
+                                    amount = "1"  //TODO: move filtered categories into viewmodel and their minmax variables
+                                )
+                            }
+                        },
+                        content = {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = stringResource(R.string.search)
+                            )
+                        }
+                    )
+                },
+                placeholder = { Text(text = stringResource(R.string.type_something)) },
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        Toast.makeText(context, "Done", Toast.LENGTH_SHORT).show()
+                    },
+                ),
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         if (!mainViewModel.showingResults) {
             LazyRow(
@@ -157,74 +200,14 @@ fun SearchScreen(
                     .fillMaxWidth()
             )
 
-            Divider()
+            //Divider()
         }
 
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            singleLine = true,
-            trailingIcon = {
-                IconButton(
-                    onClick = {
-                        if (query.isEmpty() || query.isBlank() || selectedCategoryString.isBlank()) {
-                            Toast.makeText(
-                                context,
-                                R.string.type_something,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        } else {
-                            mainViewModel.searchNeko(
-                                query = query,
-                                category = selectedCategoryString,
-                                type = if (selectedGifChip == -1) "1" else "2",
-                                amount = "1"  //TODO: move filtered categories into viewmodel and their minmax variables
-                            )
-                        }
-                    },
-                    content = {
-                        Icon(
-                            imageVector = Icons.Default.Search,
-                            contentDescription = stringResource(R.string.search)
-                        )
-                    }
-                )
-            },
-            placeholder = { Text(text = stringResource(R.string.type_something)) },
-            keyboardActions = KeyboardActions(
-                onDone = {
-                    Toast.makeText(context, "Done", Toast.LENGTH_SHORT).show()
-                },
-            ),
-            modifier = Modifier.fillMaxWidth()
-        )
-
         if (mainViewModel.showingResults) {
-            Divider()
+            //Divider()
             ResultsLayout(context, rememberCoroutineScope())
         }
     }
-}
-
-@Composable
-fun SearchScreenTopBar(mainViewModel: MainViewModel = viewModel()) {
-    TopAppBar(
-        title = { Text(text = stringResource(R.string.categories)) },
-        actions = {
-            IconButton(
-                onClick = {
-                    mainViewModel.showingResults = false
-                    // TODO: clear results here
-                },
-                content = {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = stringResource(R.string.refresh)
-                    )
-                }
-            )
-        }
-    )
 }
 
 @Composable
@@ -233,6 +216,9 @@ fun ResultsLayout(
     scope: CoroutineScope,
     viewModel: MainViewModel = viewModel()
 ) {
+    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
+    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
+
     LazyColumn(
         state = rememberLazyListState(),
         content = {
@@ -251,8 +237,8 @@ fun ResultsLayout(
                         sourceUrl = items[index].sourceUrl,
                         url = items[index].url,
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .width(240.dp)
+                            .height(screenHeight)
+                            .width(screenWidth)
                             .padding(8.dp)
                             .placeholder(
                                 visible = showPlaceHolder,
