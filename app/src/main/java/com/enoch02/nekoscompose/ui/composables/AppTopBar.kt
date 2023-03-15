@@ -37,7 +37,7 @@ fun AppScreenTopBar(
             IconButton(
                 onClick = {
                     mainViewModel.showingResults = false
-                    // TODO: clear results here
+                    mainViewModel.clearResults()
                 },
                 content = {
                     Icon(

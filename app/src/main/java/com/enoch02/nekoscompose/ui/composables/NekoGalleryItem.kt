@@ -55,6 +55,7 @@ fun NekoGalleryItem(
         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
             val (image, surface) = createRefs()
 
+
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(url)

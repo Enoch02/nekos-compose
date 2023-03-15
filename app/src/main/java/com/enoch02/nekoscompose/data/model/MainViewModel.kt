@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import retrofit2.http.Query
 import java.io.File
 
 const val TAG = "MAIN_VIEW_MODEL"
@@ -59,7 +58,8 @@ class MainViewModel(context: Context) : ViewModel() {
             }
         }
     }
-    var searchResults: List<NekoImage> by mutableStateOf(emptyList())
+    var imgSearchResults: List<NekoImage> by mutableStateOf(emptyList())
+    var gifSearchResults: List<NekoGif> by mutableStateOf(emptyList())
     var showingResults by mutableStateOf(false)
 
     init {
@@ -106,6 +106,11 @@ class MainViewModel(context: Context) : ViewModel() {
         getCategories()
     }
 
+    fun clearResults() {
+        imgSearchResults = emptyList()
+        gifSearchResults = emptyList()
+    }
+
     fun getNeko(): List<NekoImage> {
         if (nekoCache.isEmpty()) {
             fillNekoCache()
@@ -116,17 +121,18 @@ class MainViewModel(context: Context) : ViewModel() {
     fun searchNeko(query: String, type: String, category: String, amount: String) {
         try {
             viewModelScope.launch {
-                searchResults = apiService.search(query, type, category, amount).results
+                if (type == "1")
+                    imgSearchResults = apiService.search(query, type, category, amount).results
+                if (type == "2")
+                    gifSearchResults = apiService.searchGif(query, type, category, amount).results
                 showingResults = true
-                Log.d(TAG, "searchNeko: Search results", )
-                searchResults.forEach {
-                    Log.d(TAG, "searchNeko: ${it.sourceUrl}")
-                }
             }
         } catch (e: Exception) {
             Log.e(TAG, "searchNeko: ${e.message}", e)
         }
     }
+
+    fun getResults(type: String) = if (type == "1") imgSearchResults else gifSearchResults
 
     fun downloadImage(context: Context, url: String) {
         val uri = Uri.parse(url)

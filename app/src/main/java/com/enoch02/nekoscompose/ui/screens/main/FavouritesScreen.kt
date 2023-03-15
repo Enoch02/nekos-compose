@@ -80,7 +80,7 @@ fun FavouritesScreen(
                                     shape = RoundedCornerShape(8.dp),
                                     highlight = PlaceholderHighlight.fade(),
                                 ),
-                            onLoadingComplete = { showPlaceHolder = false }
+                            onLoadingComplete = { showPlaceHolder = false },
                         )
                     }
                 )

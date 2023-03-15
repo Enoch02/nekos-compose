@@ -1,6 +1,7 @@
 package com.enoch02.nekoscompose.data
 
 import com.enoch02.nekoscompose.data.model.Category
+import com.enoch02.nekoscompose.data.model.NekoGifResult
 import com.enoch02.nekoscompose.data.model.NekoResult
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -23,6 +24,14 @@ interface ApiService {
         @Query("category") category: String,
         @Query("amount") amount: String,
     ): NekoResult
+
+    @GET("search")
+    suspend fun searchGif(
+        @Query("query") query: String,
+        @Query("type") type: String,
+        @Query("category") category: String,
+        @Query("amount") amount: String,
+    ): NekoGifResult
 
     companion object {
         var apiService: ApiService? = null

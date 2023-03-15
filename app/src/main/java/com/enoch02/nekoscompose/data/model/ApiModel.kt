@@ -13,6 +13,13 @@ data class NekoResult(
     val results: List<NekoImage>
 )
 
+data class NekoGif(
+    @SerializedName("anime_name") val anime_name: String,
+    val url: String
+)
+
+data class NekoGifResult(val results: List<NekoGif>)
+
 data class Category(
     val format: String,
     val min: String,

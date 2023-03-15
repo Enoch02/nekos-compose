@@ -12,25 +12,22 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.enoch02.nekoscompose.R
 import com.enoch02.nekoscompose.data.model.MainViewModel
 import com.enoch02.nekoscompose.data.model.MainViewModelFactory
 import com.enoch02.nekoscompose.ui.composables.NekoGalleryItem
-import com.enoch02.nekoscompose.util.ChipCategories
+import com.enoch02.nekoscompose.ui.composables.NekoGifItem
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.fade
 import com.google.accompanist.placeholder.placeholder
@@ -48,6 +45,7 @@ fun SearchScreen(
         .collectAsState(initial = true)
     var query by rememberSaveable { mutableStateOf("") }
 
+    var type by rememberSaveable { mutableStateOf("1") }
     var selectedImgChip by rememberSaveable { mutableStateOf(-1) }
     var selectedGifChip by rememberSaveable { mutableStateOf(-1) }
     var selectedCategoryString by rememberSaveable { mutableStateOf("") }
@@ -56,6 +54,24 @@ fun SearchScreen(
         modifier = modifier.padding(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        var selectedCategoryMax by rememberSaveable { mutableStateOf("0") }
+        val selectedCategoryMin by rememberSaveable { mutableStateOf("0") }
+        val startSearch = {
+            if (query.isEmpty() || query.isBlank() || selectedCategoryString.isBlank()) {
+                Toast.makeText(
+                    context,
+                    R.string.type_something_and,
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                mainViewModel.searchNeko(
+                    query = query,
+                    category = selectedCategoryString,
+                    type = if (selectedGifChip == -1) "1" else "2",
+                    amount = selectedCategoryMax
+                )
+            }
+        }
 
         if (!mainViewModel.showingResults) {
             OutlinedTextField(
@@ -64,22 +80,7 @@ fun SearchScreen(
                 singleLine = true,
                 trailingIcon = {
                     IconButton(
-                        onClick = {
-                            if (query.isEmpty() || query.isBlank() || selectedCategoryString.isBlank()) {
-                                Toast.makeText(
-                                    context,
-                                    R.string.type_something,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                mainViewModel.searchNeko(
-                                    query = query,
-                                    category = selectedCategoryString,
-                                    type = if (selectedGifChip == -1) "1" else "2",
-                                    amount = "1"  //TODO: move filtered categories into viewmodel and their minmax variables
-                                )
-                            }
-                        },
+                        onClick = { startSearch() },
                         content = {
                             Icon(
                                 imageVector = Icons.Default.Search,
@@ -90,9 +91,7 @@ fun SearchScreen(
                 },
                 placeholder = { Text(text = stringResource(R.string.type_something)) },
                 keyboardActions = KeyboardActions(
-                    onDone = {
-                        Toast.makeText(context, "Done", Toast.LENGTH_SHORT).show()
-                    },
+                    onDone = { startSearch() },
                 ),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -115,10 +114,6 @@ fun SearchScreen(
                     items(
                         count = imgCategory.size,
                         itemContent = { index ->
-                            val minMax = Pair(
-                                imgCategory[index].value.min,
-                                imgCategory[index].value.max
-                            )
                             InputChip(
                                 selected = selectedImgChip == index,
                                 onClick = {
@@ -126,7 +121,9 @@ fun SearchScreen(
                                         selectedImgChip = -1
                                     } else {
                                         selectedImgChip = index
+                                        type = "1"
                                         selectedCategoryString = imgCategory[index].key
+                                        selectedCategoryMax = imgCategory[index].value.max
                                     }
                                 },
                                 label = {
@@ -166,11 +163,6 @@ fun SearchScreen(
                     items(
                         count = gifCategory.size,
                         itemContent = { index ->
-                            val minMax = Pair(
-                                gifCategory[index].value.min,
-                                gifCategory[index].value.max
-                            )
-
                             InputChip(
                                 selected = selectedGifChip == index,
                                 onClick = {
@@ -178,7 +170,9 @@ fun SearchScreen(
                                         selectedGifChip = -1
                                     } else {
                                         selectedGifChip = index
+                                        type = "2"
                                         selectedCategoryString = gifCategory[index].key
+                                        selectedCategoryMax = gifCategory[index].value.max
                                     }
                                 },
                                 label = {
@@ -205,7 +199,11 @@ fun SearchScreen(
 
         if (mainViewModel.showingResults) {
             //Divider()
-            ResultsLayout(context, rememberCoroutineScope())
+            ResultsLayout(
+                context = context,
+                scope = rememberCoroutineScope(),
+                type = type
+            )
         }
     }
 }
@@ -214,42 +212,69 @@ fun SearchScreen(
 fun ResultsLayout(
     context: Context,
     scope: CoroutineScope,
-    viewModel: MainViewModel = viewModel()
+    viewModel: MainViewModel = viewModel(),
+    type: String
 ) {
-    val screenHeight = LocalConfiguration.current.screenHeightDp.dp
     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 
     LazyColumn(
         state = rememberLazyListState(),
         content = {
-            val items = viewModel.searchResults
+            val items = viewModel.imgSearchResults
+            val gifItems = viewModel.gifSearchResults
 
-            items(
-                count = items.size,
-                itemContent = { index ->
-                    var showPlaceHolder by rememberSaveable { mutableStateOf(true) }
+            if (type == "1") {
+                items(
+                    count = items.size,
+                    itemContent = { index ->
+                        var showPlaceHolder by rememberSaveable { mutableStateOf(true) }
 
-                    NekoGalleryItem(
-                        context = context,
-                        scope = rememberCoroutineScope(),
-                        artistHref = items[index].artistHref,
-                        artistName = items[index].artistName,
-                        sourceUrl = items[index].sourceUrl,
-                        url = items[index].url,
-                        modifier = Modifier
-                            .height(screenHeight)
-                            .width(screenWidth)
-                            .padding(8.dp)
-                            .placeholder(
-                                visible = showPlaceHolder,
-                                color = Color.LightGray,
-                                shape = RoundedCornerShape(8.dp),
-                                highlight = PlaceholderHighlight.fade(),
-                            ),
-                        onLoadingComplete = { showPlaceHolder = false }
-                    )
-                }
-            )
+                        NekoGalleryItem(
+                            context = context,
+                            scope = rememberCoroutineScope(),
+                            artistHref = items[index].artistHref,
+                            artistName = items[index].artistName,
+                            sourceUrl = items[index].sourceUrl,
+                            url = items[index].url,
+                            modifier = Modifier
+                                .fillParentMaxHeight()
+                                .width(screenWidth)
+                                .padding(8.dp)
+                                .placeholder(
+                                    visible = showPlaceHolder,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp),
+                                    highlight = PlaceholderHighlight.fade(),
+                                ),
+                            onLoadingComplete = { showPlaceHolder = false },
+                        )
+                    }
+                )
+            } else {
+                items(
+                    count = gifItems.size,
+                    itemContent = { index ->
+                        var showPlaceHolder by rememberSaveable { mutableStateOf(true) }
+
+                        NekoGifItem(
+                            anime_name = gifItems[index].anime_name,
+                            url = gifItems[index].url,
+                            context = context,
+                            modifier = Modifier
+                                .fillParentMaxHeight()
+                                .width(screenWidth)
+                                .padding(8.dp)
+                                .placeholder(
+                                    visible = showPlaceHolder,
+                                    color = Color.LightGray,
+                                    shape = RoundedCornerShape(8.dp),
+                                    highlight = PlaceholderHighlight.fade(),
+                                ),
+                            onLoadingComplete = { showPlaceHolder = false },
+                        )
+                    }
+                )
+            }
         },
         modifier = Modifier.fillMaxSize()
     )
