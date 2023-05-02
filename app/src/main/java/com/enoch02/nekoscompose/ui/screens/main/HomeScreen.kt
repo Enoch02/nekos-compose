@@ -1,18 +1,27 @@
 package com.enoch02.nekoscompose.ui.screens.main
 
 import android.app.Application
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -24,7 +33,6 @@ import com.enoch02.nekoscompose.data.model.MainViewModel
 import com.enoch02.nekoscompose.data.model.MainViewModelFactory
 import com.enoch02.nekoscompose.data.model.NekoImage
 import com.enoch02.nekoscompose.ui.composables.NekoGalleryItem
-import com.enoch02.nekoscompose.ui.composables.TBD
 import com.google.accompanist.placeholder.PlaceholderHighlight
 import com.google.accompanist.placeholder.material.fade
 import com.google.accompanist.placeholder.placeholder
@@ -32,7 +40,7 @@ import com.google.accompanist.placeholder.placeholder
 @Composable
 fun HomeScreen(
     mainViewModel: MainViewModel = viewModel(factory = MainViewModelFactory(application = LocalContext.current.applicationContext as Application)),
-    listState: LazyListState,
+    homeListState: LazyListState,
     modifier: Modifier
 ) {
     var images: List<NekoImage> by remember { mutableStateOf(emptyList()) }
@@ -63,7 +71,7 @@ fun HomeScreen(
             false -> {
                 NekoGallery(
                     images = images,
-                    listState = listState,
+                    listState = homeListState,
                     modifier = modifier
                 )
             }

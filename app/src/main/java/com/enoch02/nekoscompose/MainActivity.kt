@@ -12,12 +12,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -31,34 +30,34 @@ import com.enoch02.nekoscompose.ui.screens.main.FavouritesScreen
 import com.enoch02.nekoscompose.ui.screens.main.HomeScreen
 import com.enoch02.nekoscompose.ui.screens.main.SearchScreen
 import com.enoch02.nekoscompose.ui.theme.NekosComposeTheme
+import kotlinx.coroutines.launch
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            /** Don't delete: Initializes the app's ViewModel **/
             val mainViewModel: MainViewModel =
                 viewModel(factory = MainViewModelFactory(application = LocalContext.current.applicationContext as Application))
-            val listState = rememberLazyListState()
+            val homeListState = rememberLazyListState()
+            val favouritesListState = rememberLazyListState()
 
             NekosComposeTheme {
-                // TODO: change back to zero
-                var selectedScreen by rememberSaveable { mutableStateOf(1) }
+                var selectedScreen by rememberSaveable { mutableStateOf(0) }
+                val scope = rememberCoroutineScope()
 
                 Scaffold(
                     topBar = {
-                        /*when (selectedScreen) {
-                            0 -> {
-                                AppScreenTopBar(currentScreen = selectedScreen)
+                        AppScreenTopBar(
+                            currentScreen = selectedScreen,
+                            resetScrollStates = {
+                                scope.launch {
+                                    homeListState.scrollToItem(0)
+                                    favouritesListState.scrollToItem(0)
+                                }
                             }
-                            1 -> {
-                                SearchScreenTopBar()
-                            }
-                            2 -> {
-                                AppScreenTopBar(currentScreen = selectedScreen)
-                            }
-                        }*/
-                        AppScreenTopBar(currentScreen = selectedScreen)
+                        )
                     },
                     bottomBar = {
                         val items = listOf(R.string.home, R.string.search, R.string.favorites)
@@ -90,14 +89,19 @@ class MainActivity : ComponentActivity() {
                                 0 -> {
                                     HomeScreen(
                                         modifier = Modifier.padding(innerPadding),
-                                        listState = listState
+                                        homeListState = homeListState
                                     )
                                 }
+
                                 1 -> {
                                     SearchScreen(modifier = Modifier.padding(innerPadding))
                                 }
+
                                 2 -> {
-                                    FavouritesScreen(modifier = Modifier.padding(innerPadding))
+                                    FavouritesScreen(
+                                        modifier = Modifier.padding(innerPadding),
+                                        favouritesListState = favouritesListState
+                                    )
                                 }
                             }
                         }

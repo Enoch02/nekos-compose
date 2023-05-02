@@ -2,6 +2,7 @@ package com.enoch02.nekoscompose.ui.screens.main
 
 import android.app.Application
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -31,6 +32,7 @@ import com.google.accompanist.placeholder.placeholder
 @Composable
 fun FavouritesScreen(
     modifier: Modifier,
+    favouritesListState: LazyListState,
     mainViewModel: MainViewModel = viewModel(factory = MainViewModelFactory(application = LocalContext.current.applicationContext as Application))
 ) {
     val items: List<Neko> by mainViewModel.getFavourites().collectAsState(initial = emptyList())
@@ -53,8 +55,10 @@ fun FavouritesScreen(
             )
         }
     } else {
+        //TODO: use NekoGallery Composable
         LazyRow(
             modifier = modifier,
+            state = favouritesListState,
             content = {
                 items(
                     count = items.size,
