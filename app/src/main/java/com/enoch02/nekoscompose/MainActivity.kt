@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -29,6 +30,7 @@ import com.enoch02.nekoscompose.ui.composables.AppScreenTopBar
 import com.enoch02.nekoscompose.ui.screens.main.FavouritesScreen
 import com.enoch02.nekoscompose.ui.screens.main.HomeScreen
 import com.enoch02.nekoscompose.ui.screens.main.SearchScreen
+import com.enoch02.nekoscompose.ui.screens.main.SettingsScreen
 import com.enoch02.nekoscompose.ui.theme.NekosComposeTheme
 import kotlinx.coroutines.launch
 
@@ -42,16 +44,17 @@ class MainActivity : ComponentActivity() {
                 viewModel(factory = MainViewModelFactory(application = LocalContext.current.applicationContext as Application))
             val homeListState = rememberLazyListState()
             val favouritesListState = rememberLazyListState()
+            val scope = rememberCoroutineScope()
 
             NekosComposeTheme {
                 var selectedScreen by rememberSaveable { mutableStateOf(0) }
-                val scope = rememberCoroutineScope()
 
                 Scaffold(
                     topBar = {
                         AppScreenTopBar(
                             currentScreen = selectedScreen,
                             resetScrollStates = {
+                                //TODO: does not work offline
                                 scope.launch {
                                     homeListState.scrollToItem(0)
                                     favouritesListState.scrollToItem(0)
@@ -60,11 +63,17 @@ class MainActivity : ComponentActivity() {
                         )
                     },
                     bottomBar = {
-                        val items = listOf(R.string.home, R.string.search, R.string.favorites)
+                        val items = listOf(
+                            R.string.home,
+                            R.string.search,
+                            R.string.favorites,
+                            R.string.settings
+                        )
                         val icons = listOf(
                             Icons.Default.Home,
                             Icons.Default.Search,
-                            Icons.Default.Favorite
+                            Icons.Default.Favorite,
+                            Icons.Default.Settings
                         )
 
                         NavigationBar {
@@ -102,6 +111,10 @@ class MainActivity : ComponentActivity() {
                                         modifier = Modifier.padding(innerPadding),
                                         favouritesListState = favouritesListState
                                     )
+                                }
+
+                                3 -> {
+                                    SettingsScreen(modifier = Modifier.padding(innerPadding))
                                 }
                             }
                         }

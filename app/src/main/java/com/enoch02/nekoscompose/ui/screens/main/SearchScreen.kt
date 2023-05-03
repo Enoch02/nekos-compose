@@ -33,6 +33,7 @@ import com.google.accompanist.placeholder.material.fade
 import com.google.accompanist.placeholder.placeholder
 import kotlinx.coroutines.CoroutineScope
 
+//TODO: Replace with M3 SearchBar composable
 @Composable
 fun SearchScreen(
     mainViewModel: MainViewModel = viewModel(factory = MainViewModelFactory(application = LocalContext.current.applicationContext as Application)),
