@@ -10,6 +10,7 @@ import androidx.compose.material.icons.filled.HeartBroken
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -55,7 +56,6 @@ fun FavouritesScreen(
             )
         }
     } else {
-        //TODO: use NekoGallery Composable
         LazyRow(
             modifier = modifier,
             state = favouritesListState,
@@ -63,7 +63,7 @@ fun FavouritesScreen(
                 items(
                     count = items.size,
                     itemContent = { index ->
-                        var showPlaceHolder by remember { mutableStateOf(true) }
+                        var showPlaceHolder by rememberSaveable { mutableStateOf(true) }
                         val neko = items[index]
                         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 

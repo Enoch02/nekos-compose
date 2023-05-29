@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -91,7 +92,7 @@ fun NekoGallery(
             items(
                 count = images.size,
                 itemContent = { index ->
-                    var showPlaceHolder by remember { mutableStateOf(true) }
+                    var showPlaceHolder by rememberSaveable { mutableStateOf(true) }
                     val image = images[index]
                     val screenWidth = LocalConfiguration.current.screenWidthDp.dp
 

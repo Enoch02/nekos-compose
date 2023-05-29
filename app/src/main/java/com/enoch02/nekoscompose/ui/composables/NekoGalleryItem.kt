@@ -65,7 +65,7 @@ fun NekoGalleryItem(
                     .build(),
                 contentDescription = "Neko image by $artistName",
                 contentScale = ContentScale.Crop,
-                onSuccess = { onLoadingComplete.invoke() },
+                onSuccess = { onLoadingComplete() },
                 modifier = Modifier
                     .constrainAs(image) {
                         top.linkTo(parent.top)

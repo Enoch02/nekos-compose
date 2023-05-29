@@ -6,7 +6,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cached
 import androidx.compose.material3.Divider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -23,7 +29,51 @@ fun SettingsScreen(modifier: Modifier) {
     val cacheDir = LocalContext.current.cacheDir
     var cacheSize by rememberSaveable { mutableStateOf(getDirSize(cacheDir)) }
 
-    Column(
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        content = {
+            item {
+                ListItem(
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.Cached,
+                            contentDescription = null
+                        )
+                    },
+                    headlineContent = { Text(text = "Clear Cache") },
+                    supportingContent = { Text(text = "Current Cache Size: ${cacheSize / 1_000_000} MB") },
+                    modifier = Modifier.clickable {
+                        if (cacheDir.exists())
+                            cacheDir.deleteRecursively()
+                        cacheSize = getDirSize(cacheDir)
+                    }
+                )
+
+                Divider(modifier = Modifier.padding(horizontal = 8.dp))
+            }
+
+            item {
+                //TODO: make functional
+                var checked by rememberSaveable { mutableStateOf(true) }
+
+                ListItem(
+                    headlineContent = { Text(text = "Dynamic colors") },
+                    supportingContent = { Text(text = "Toggle dynamic colors on supported devices") },
+                    trailingContent = {
+                        Switch(
+                            checked = checked,
+                            onCheckedChange = { checked = it }
+                        )
+                    },
+                    modifier = Modifier.clickable {
+                        checked = !checked
+                    }
+                )
+            }
+        }
+    )
+
+    /*Column(
         modifier
             .fillMaxSize()
             .padding(8.dp)
@@ -43,7 +93,7 @@ fun SettingsScreen(modifier: Modifier) {
             }
         )
         Divider()
-    }
+    }*/
 }
 
 //TODO: make asnyc?

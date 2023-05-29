@@ -143,6 +143,7 @@ class MainViewModel(context: Context) : ViewModel() {
         )
 
         if (file.exists()) {
+            //TODO: Test if this part of the code works...
             Log.d(TAG, "downloadImage: A file with the name '$fileName' exists!")
             return
         } else {

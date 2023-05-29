@@ -90,9 +90,9 @@ fun NekosComposeTheme(
     content: @Composable () -> Unit
 ) {
     val systemUiController = rememberSystemUiController()
+    val context = LocalContext.current
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
@@ -104,13 +104,16 @@ fun NekosComposeTheme(
         SideEffect {
             (view.context as Activity).window.statusBarColor = colorScheme.primary.toArgb()
             ViewCompat.getWindowInsetsController(view)?.isAppearanceLightStatusBars = darkTheme
-            systemUiController.setStatusBarColor(
-                color = if (darkTheme) DarkColors.background else LightColors.background
-            )
-            //TODO: replace hardcoded colors
-            systemUiController.setNavigationBarColor(
-                color = if (darkTheme) Color(0xFF322629) else Color(0xFFF7ECF1)
-            )
+
+            // Don't manually set colors if the phone has dynamic colors
+            if (!(dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)) {
+                systemUiController.setStatusBarColor(
+                    color = if (darkTheme) DarkColors.background else LightColors.background
+                )
+                systemUiController.setNavigationBarColor(
+                    color = if (darkTheme) Color(0xFF322629) else Color(0xFFF7ECF1)
+                )
+            }
         }
     }
 
