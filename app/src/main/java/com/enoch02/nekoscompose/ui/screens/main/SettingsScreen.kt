@@ -20,6 +20,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import java.io.File
@@ -67,7 +68,14 @@ fun SettingsScreen(modifier: Modifier) {
                     },
                     modifier = Modifier.clickable {
                         checked = !checked
-                    }
+                    }.alpha(0f)
+                )
+            }
+
+            item {
+                ListItem(
+                    headlineContent = { Text(text = "About") },
+                    modifier = Modifier.alpha(0f)
                 )
             }
         }

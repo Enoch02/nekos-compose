@@ -3,16 +3,32 @@ package com.enoch02.nekoscompose.ui.composables
 import android.app.Application
 import android.content.Context
 import android.widget.Toast
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Fullscreen
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Share
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
@@ -21,6 +37,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.constraintlayout.compose.Visibility
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import coil.request.CachePolicy
@@ -64,7 +81,7 @@ fun NekoGalleryItem(
                     .crossfade(true)
                     .build(),
                 contentDescription = "Neko image by $artistName",
-                contentScale = ContentScale.Crop,
+                contentScale = if (mainViewModel.fullScreen) ContentScale.Fit else ContentScale.Crop,
                 onSuccess = { onLoadingComplete() },
                 modifier = Modifier
                     .constrainAs(image) {
@@ -87,60 +104,80 @@ fun NekoGalleryItem(
                         end.linkTo(parent.end)
                         width = Dimension.fillToConstraints
                         height = Dimension.wrapContent
+                        visibility =
+                            if (mainViewModel.fullScreen) Visibility.Gone else Visibility.Visible
                     },
-                tonalElevation = 8.dp,
-            ) {
-                Column {
-                    Text(
-                        text = "Artist: $artistName",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.padding(start = 2.dp)
-                    )
+                /*tonalElevation = 8.dp,*/
+                content = {
+                    Column {
+                        Text(
+                            text = "Artist: $artistName",
+                            style = MaterialTheme.typography.titleMedium,
+                            modifier = Modifier.padding(start = 2.dp)
+                        )
 
-                    ActionsRow(
-                        onProfileClicked = { mainViewModel.viewProfile(context, artistHref) },
-                        onDownloadClicked = {
-                            mainViewModel.downloadImage(
-                                context = context,
-                                url = url
-                            )
-                            Toast.makeText(context, R.string.downloading, Toast.LENGTH_SHORT).show()
-                        },
-                        onShareButtonClicked = { mainViewModel.shareImageLink(context, sourceUrl) },
-                        onFavouriteButtonClicked = {
-                            val neko = Neko(
-                                artistHref = artistHref,
-                                artistName = artistName,
-                                sourceUrl = sourceUrl,
-                                url = url
-                            )
-                            scope.launch {
-                                when (mainViewModel.insertFavourite(neko)) {
-                                    FavouriteState.ADDING -> {
-                                        Toast.makeText(
-                                            context,
-                                            "Adding to favourites",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
+                        ActionsRow(
+                            onProfileClicked = {
+                                mainViewModel.viewProfile(
+                                    context,
+                                    artistHref
+                                )
+                            },
+                            onDownloadClicked = {
+                                mainViewModel.downloadImage(
+                                    context = context,
+                                    url = url
+                                )
+                                Toast.makeText(
+                                    context,
+                                    R.string.downloading,
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
+                            onShareButtonClicked = {
+                                mainViewModel.shareImageLink(
+                                    context,
+                                    sourceUrl
+                                )
+                            },
+                            onFavouriteButtonClicked = {
+                                val neko = Neko(
+                                    artistHref = artistHref,
+                                    artistName = artistName,
+                                    sourceUrl = sourceUrl,
+                                    url = url
+                                )
+                                scope.launch {
+                                    when (mainViewModel.insertFavourite(neko)) {
+                                        FavouriteState.ADDING -> {
+                                            Toast.makeText(
+                                                context,
+                                                "Adding to favourites",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
+
+                                        FavouriteState.REMOVING -> {
+                                            Toast.makeText(
+                                                context,
+                                                "Removed from favourites",
+                                                Toast.LENGTH_SHORT
+                                            ).show()
+                                        }
                                     }
 
-                                    FavouriteState.REMOVING -> {
-                                        Toast.makeText(
-                                            context,
-                                            "Removed from favourites",
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
+                                    isFavourite = mainViewModel.checkFavourite(neko.url)
                                 }
-
-                                isFavourite = mainViewModel.checkFavourite(neko.url)
-                            }
-                        },
-                        favouriteButtonTint = if (isFavourite) Color.Red else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-            }
+                            },
+                            onExpandButtonClicked = {
+                                mainViewModel.fullScreen = true
+                            },
+                            favouriteButtonTint = if (isFavourite) Color.Red else MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                    }
+                },
+            )
         }
     }
 }
@@ -151,6 +188,7 @@ fun ActionsRow(
     onDownloadClicked: () -> Unit,
     onShareButtonClicked: () -> Unit,
     onFavouriteButtonClicked: () -> Unit,
+    onExpandButtonClicked: () -> Unit,
     favouriteButtonTint: Color,
     modifier: Modifier,
 ) {
@@ -196,6 +234,16 @@ fun ActionsRow(
                     imageVector = Icons.Default.Favorite,
                     tint = favouriteButtonTint,
                     contentDescription = stringResource(R.string.add_to_fav)
+                )
+            }
+        )
+
+        IconButton(
+            onClick = onExpandButtonClicked,
+            content = {
+                Icon(
+                    imageVector = Icons.Default.Fullscreen,
+                    contentDescription = stringResource(R.string.expand)
                 )
             }
         )

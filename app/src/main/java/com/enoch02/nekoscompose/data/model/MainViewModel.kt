@@ -61,6 +61,7 @@ class MainViewModel(context: Context) : ViewModel() {
     var imgSearchResults: List<NekoImage> by mutableStateOf(emptyList())
     var gifSearchResults: List<NekoGif> by mutableStateOf(emptyList())
     var showingResults by mutableStateOf(false)
+    var fullScreen by mutableStateOf(false)
 
     init {
         fillNekoCache()
@@ -155,7 +156,6 @@ class MainViewModel(context: Context) : ViewModel() {
                 .setTitle(fileName)
                 .setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName)
                 .setMimeType("image/jpg")
-                .setAllowedOverMetered(true)
 
             downloadManager.enqueue(request)
         }

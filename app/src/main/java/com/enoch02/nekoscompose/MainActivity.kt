@@ -8,6 +8,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -39,7 +40,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            /** Don't delete: Initializes the app's ViewModel **/
             val mainViewModel: MainViewModel =
                 viewModel(factory = MainViewModelFactory(application = LocalContext.current.applicationContext as Application))
             val homeListState = rememberLazyListState()
@@ -51,16 +51,18 @@ class MainActivity : ComponentActivity() {
 
                 Scaffold(
                     topBar = {
-                        AppScreenTopBar(
-                            currentScreen = selectedScreen,
-                            resetScrollStates = {
-                                //TODO: does not work offline
-                                scope.launch {
-                                    homeListState.scrollToItem(0)
-                                    favouritesListState.scrollToItem(0)
+                        if (!mainViewModel.fullScreen) {
+                            AppScreenTopBar(
+                                currentScreen = selectedScreen,
+                                resetScrollStates = {
+                                    //TODO: does not work offline
+                                    scope.launch {
+                                        homeListState.scrollToItem(0)
+                                        favouritesListState.scrollToItem(0)
+                                    }
                                 }
-                            }
-                        )
+                            )
+                        }
                     },
                     bottomBar = {
                         val items = listOf(
@@ -76,20 +78,24 @@ class MainActivity : ComponentActivity() {
                             Icons.Default.Settings
                         )
 
-                        NavigationBar {
-                            items.forEachIndexed { index, item ->
-                                NavigationBarItem(
-                                    selected = selectedScreen == index,
-                                    onClick = { selectedScreen = index },
-                                    label = { Text(text = stringResource(item)) },
-                                    icon = {
-                                        Icon(
-                                            imageVector = icons[index],
-                                            contentDescription = stringResource(item)
+                        if (!mainViewModel.fullScreen) {
+                            NavigationBar(
+                                content = {
+                                    items.forEachIndexed { index, item ->
+                                        NavigationBarItem(
+                                            selected = selectedScreen == index,
+                                            onClick = { selectedScreen = index },
+                                            label = { Text(text = stringResource(item)) },
+                                            icon = {
+                                                Icon(
+                                                    imageVector = icons[index],
+                                                    contentDescription = stringResource(item)
+                                                )
+                                            }
                                         )
                                     }
-                                )
-                            }
+                                }
+                            )
                         }
                     },
                     content = { innerPadding ->
@@ -109,7 +115,7 @@ class MainActivity : ComponentActivity() {
                                 2 -> {
                                     FavouritesScreen(
                                         modifier = Modifier.padding(innerPadding),
-                                        favouritesListState = favouritesListState
+                                        favouritesListState = favouritesListState,
                                     )
                                 }
 

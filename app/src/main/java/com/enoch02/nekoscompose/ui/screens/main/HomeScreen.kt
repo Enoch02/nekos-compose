@@ -1,6 +1,8 @@
 package com.enoch02.nekoscompose.ui.screens.main
 
 import android.app.Application
+import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -49,15 +51,49 @@ fun HomeScreen(
         images = mainViewModel.getNeko()
     }
 
-    if (mainViewModel.getNekoErrorState()) {
-        Column(
-            modifier = modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = "Could not load images")
-            Icon(imageVector = Icons.Default.Warning, contentDescription = "Error!")
+    if (mainViewModel.fullScreen) {
+        BackHandler(
+            onBack = {
+                mainViewModel.fullScreen = false
+            }
+        )
+    }
+
+    AnimatedContent(targetState = mainViewModel.getNekoErrorState()) {
+        if (it) {
+            Column(
+                modifier = modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = "Could not load images")
+                Icon(imageVector = Icons.Default.Warning, contentDescription = "Error!")
+            }
+        } else {
+            when (images.isEmpty()) {
+                true -> {
+                    Column(
+                        modifier = modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
+
+                false -> {
+                    NekoGallery(
+                        images = images,
+                        listState = homeListState,
+                        modifier = modifier
+                    )
+                }
+            }
         }
+    }
+
+    if (mainViewModel.getNekoErrorState()) {
+
     } else {
         when (images.isEmpty()) {
             true -> {
@@ -69,6 +105,7 @@ fun HomeScreen(
                     CircularProgressIndicator()
                 }
             }
+
             false -> {
                 NekoGallery(
                     images = images,
@@ -91,6 +128,7 @@ fun NekoGallery(
         content = {
             items(
                 count = images.size,
+                key = { index -> images[index].url },
                 itemContent = { index ->
                     var showPlaceHolder by rememberSaveable { mutableStateOf(true) }
                     val image = images[index]
